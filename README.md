@@ -13,7 +13,7 @@ Suffix|Type|Get/Set/Function|Description
 ``Version``|String|Get|The installed version of kOS-WPKSP
 ``HideToolbar``|-|void Funciton|Hides the main toolbar
 ``ShowToolbar``|-|void Function|Shows the main toolbar
-``Resources``|Boolean|Get/set|Is the resouces window visible [^1]
+``Resources``|Boolean|Get/set|Is the resources window visible
 ``Info`` ``ShowInfo``|-|void Function(String *selection*)|Select which information should be displayed in the FlightInfoUI (bottom left corner):<br><br>*"INPUT"*, *"STAGING"*, *"DEFAULT"*:<br>Steering axes<br><br>*"MANEUVER"*, *"ORBIT"*, *"ORBITAL"*:<br>Orbital pamameters<br><br>*"DOCK"*, *"DOCKING"*:<br>Docking view / Steering + Translation axes
 ``Time`` ``ShowTime``|-|void Function(String *selection*)|Select the time format in the METDisplay (upper left corner):<br><br>*"MET"*, *"MISSION"*, *"MISSIONTIME"*:<br>MET (Mission Elapsed Time)<br><br>*"UT"*, *"UNIVERSAL"*, *"UNIVERSALTIME"*, *"CALENDAR"*:<br>UT (Universal Time)
 ``ToggleTime``|-|void Function|Toggle the METDisplay (upper left corner) between MET and UT
