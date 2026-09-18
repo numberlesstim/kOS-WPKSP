@@ -21,7 +21,7 @@ namespace kOS_WPKSP
     [KOSNomenclature("WPKSPAddon")]
     public class WPKSPAddon : kOS.Suffixed.Addon
     {
-        public static readonly String version = "1.2.1.0";
+        public static readonly String version = "1.2.1.1";
         static WPKSPAddon()
         {
         }
@@ -161,7 +161,7 @@ namespace kOS_WPKSP
             {
                 var activeCutouts = UnityEngine.Object.FindObjectsOfType<global::InternalSpaceOverlay>();
                 
-                if (activeCutouts.Length == 0)
+                if (activeCutouts.Length > 0)
                 {
                     foreach (var cutout in activeCutouts)
                     {
