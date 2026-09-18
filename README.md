@@ -49,7 +49,7 @@ Suffix|Type|Get/Set/Function|Description
 ``Scroll``|-|void Function(Int *offset*)|Scroll the terminal by *offset* number of rows<br> Positive *offset* scrolls down, Negative *offset* scrolls up
 ``Focus``|-|void Function|Make the terminal take the focus and bring it to the front
 
-><b>Please note that the way the ``TERMINAL`` structure is being expanded will very likely conflict with other AddOns using the same approach. If that happens i expect only one of the AddOns to succeed without any error or notification!!</b>
+><b>Please note that the way the ``TERMINAL`` structure is being expanded will very likely conflict with other AddOns using the same approach. If that happens i expect only one of the AddOns to succeed and without any error or notification being shown!!</b>
 
 ### Example cases
 Is the list of files longer than the terminal is high?
