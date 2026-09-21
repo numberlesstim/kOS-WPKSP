@@ -68,6 +68,7 @@
   <ItemGroup>
     <Publicize Include="Assembly-CSharp" />
     <Publicize Include="Assembly-CSharp-firstpass" />
+    <Publicize Include="UnityEngine.UI" />
     <Publicize Include="kOS" />
     <Publicize Include="kOS.Safe" />
   </ItemGroup>

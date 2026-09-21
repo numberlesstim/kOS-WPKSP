@@ -1,4 +1,5 @@
 using System;
+using Expansions.Missions.Actions;
 using kOS;
 using kOS.AddOns;
 using kOS.Module;
@@ -11,7 +12,9 @@ using kOS.Screen;
 using kOS.Suffixed;
 using kOS.Suffixed.PartModuleField;
 using kOS_WPKSP;
+using KSP.UI.Dialogs;
 using KSP.UI.Screens;
+using KSP.UI.Screens.Flight;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +24,7 @@ namespace kOS_WPKSP
     [KOSNomenclature("WPKSPAddon")]
     public class WPKSPAddon : kOS.Suffixed.Addon
     {
-        public static readonly String version = "1.2.1.1";
+        public static readonly String version = "1.3.0.0";
         static WPKSPAddon()
         {
         }
@@ -51,13 +54,190 @@ namespace kOS_WPKSP
             AddSuffix("TOGGLEHUD", new NoArgsVoidSuffix(ToggleHUD));
             AddSuffix("HIDEHUD", new NoArgsVoidSuffix(HideHUD));
             AddSuffix("SHOWHUD", new NoArgsVoidSuffix(ShowHUD));
-            AddSuffix("HUD", new SetSuffix<BooleanValue>(new SuffixGetDlg<BooleanValue>(IsHUDVisible), new SuffixSetDlg<BooleanValue>(SetHUD)));
+            AddSuffix(new[]{"F2", "HUD"}, new SetSuffix<BooleanValue>(new SuffixGetDlg<BooleanValue>(IsHUDVisible), new SuffixSetDlg<BooleanValue>(SetHUD)));
             AddSuffix("VERSION", new Suffix<StringValue>(GetVersion));
+            AddSuffix("TOGGLENAVBALL", new NoArgsVoidSuffix(ToggleNavball));
+            AddSuffix("NAVBALL", new SetSuffix<BooleanValue>(new SuffixGetDlg<BooleanValue>(GetNavball), new SuffixSetDlg<BooleanValue>(SetNavball)));
+            AddSuffix(new[]{"ALTIMETER", "ALTITUDEMODE"}, new SetSuffix<StringValue>(new SuffixGetDlg<StringValue>(GetAltitudeMode), new SuffixSetDlg<StringValue>(SetAltitudeMode)));
+            AddSuffix("CREWPORTRAITSRIGHT", new NoArgsVoidSuffix(KerbalGalleryRight));
+            AddSuffix("CREWPORTRAITSLEFT", new NoArgsVoidSuffix(KerbalGalleryLeft));
+            AddSuffix("EXPANDCREWPORTRAITS", new NoArgsVoidSuffix(KerbalGalleryAddSlot));
+            AddSuffix("SHRINKCREWPORTRAITS", new NoArgsVoidSuffix(KerbalGalleryRemoveSlot));
+            AddSuffix("SPAWNRANDOMCOMET", new NoArgsVoidSuffix(() => ScenarioDiscoverableObjects.Instance.SpawnComet()));
+            AddSuffix(new[]{"DELTAVINFO", "DVINFO", "STAGEINFO"}, new SetSuffix<BooleanValue>(new SuffixGetDlg<BooleanValue>(GetStageInfoPanels), new SuffixSetDlg<BooleanValue>(SetStageInfoPanels)));
+            AddSuffix(new[]{"STAGES", "STAGING", "STAGINGSTACK"}, new SetSuffix<BooleanValue>(new SuffixGetDlg<BooleanValue>(GetStagingStack), new SuffixSetDlg<BooleanValue>(SetStagingStack)));
+            AddSuffix(new[]{"STAGINGSTACKSCROLL", "STAGINGSCROLL", "STAGESCROLL", "STAGESSCROLL"}, new SetSuffix<ScalarDoubleValue>(new SuffixGetDlg<ScalarDoubleValue>(GetStagingStackScroll), new SuffixSetDlg<ScalarDoubleValue>(SetStagingStackScroll)));
+            AddSuffix(new[]{"F3", "FLIGHTRESULTS", "FLIGHTRESULT"}, new SetSuffix<BooleanValue>(new SuffixGetDlg<BooleanValue>(GetFlightResultShowing), new SuffixSetDlg<BooleanValue>(ShowFlightResults)));
+        }
+
+        private BooleanValue GetFlightResultShowing()
+        {
+            return new BooleanValue(FlightResultsDialog.isDisplaying);
+        }
+
+        private void ShowFlightResults(BooleanValue show)
+        {
+            if (FlightResultsDialog.isDisplaying)
+            {
+                FlightResultsDialog.Close();
+            }
+            if (show.Value)
+            {
+                FlightResultsDialog.showExitControls = false;
+                FlightResultsDialog.allowClosingDialog = false;
+                FlightResultsDialog.Display(KSP.Localization.Localizer.Format("#autoLOC_135218", Vessel.GetSituationString(FlightGlobals.ActiveVessel)));
+                FlightDriver.SetPause(false, false);
+            }
+        }
+
+        private ScalarDoubleValue GetStagingStackScroll()
+        {
+            try
+            {
+                return new ScalarDoubleValue(StageManager.Instance.scrollRect.m_Content.anchoredPosition.y);
+            }
+            catch (Exception e)
+            {
+                throw new kOS.Safe.Exceptions.KOSException("Failed to read the staging stack scroll value: " + e.Message);
+            }
+        }
+
+        private void SetStagingStackScroll(ScalarDoubleValue scroll)
+        {
+            try
+            {
+                Vector2 scrollPos = StageManager.Instance.scrollRect.m_Content.anchoredPosition;
+                scrollPos.y = Convert.ToSingle(scroll.Value);
+                StageManager.Instance.scrollRect.m_Content.anchoredPosition = scrollPos;
+            }
+            catch (Exception e)
+            {
+                throw new kOS.Safe.Exceptions.KOSException("Failed to set the staging stack scroll value: " + e.Message);
+            }
+        }
+
+        private BooleanValue GetStagingStack()
+        {
+            if (StageManager.Instance != null)
+            {
+                return new BooleanValue(StageManager.Instance.Visible);
+            }
+            throw new kOS.Safe.Exceptions.KOSException("StageManager is not instanciated");
+        }
+
+        private void SetStagingStack(BooleanValue show)
+        {
+            StageManager.ShowHideStageStack(show.Value);
+        }
+
+        private BooleanValue GetStageInfoPanels()
+        {
+            if (StageManager.Instance != null)
+            {
+                return new BooleanValue(StageManager.Instance.infoPanelsEnabled);
+            }
+            throw new kOS.Safe.Exceptions.KOSException("StageManager is not instanciated");
+        }
+
+        private void SetStageInfoPanels(BooleanValue show)
+        {
+            if (StageManager.Instance != null)
+            {
+                StageManager.Instance.ToggleInfoPanels(show.Value);
+            }
+            throw new kOS.Safe.Exceptions.KOSException("StageManager is not instanciated");
         }
 
         private StringValue GetVersion()
         {
             return new StringValue(version);
+        }
+
+        private StringValue GetAltitudeMode()
+        {
+            return new StringValue(AltitudeTumbler.Instance.aglMode.ToString());
+        }
+
+        private void SetAltitudeMode(StringValue mode)
+        {
+            var modeStr = mode.ToString().ToUpperInvariant();
+            switch (modeStr)
+            {
+                case "AGL":
+                case "SURFACE":
+                case "GROUND":
+                case "RADAR":
+                case "TERRAIN":
+                    AltitudeTumbler.Instance.SetModeTumbler(AltimeterDisplayState.AGL);
+                    break;
+                case "ASL":
+                case "ORBIT":
+                case "SEALEVEL":
+                case "WATER":
+                case "TOTAL":
+                case "PRESSURE":
+                    AltitudeTumbler.Instance.SetModeTumbler(AltimeterDisplayState.ASL);
+                    break;
+                case "DEFAULT":
+                case "RESET":
+                case "NORMAL":
+                case "":
+                    AltitudeTumbler.Instance.SetModeTumbler(AltimeterDisplayState.DEFAULT);
+                    break;
+                default:
+                    throw new kOS.Safe.Exceptions.KOSException("'" + modeStr + "' is not a valid altitude mode. Valid modes include: AGL, ASL, DEFAULT");
+            }
+        }
+
+        private void KerbalGalleryRight()
+        {
+            KerbalPortraitGallery.Instance.onBtnRight();
+        }
+
+        private void KerbalGalleryLeft()
+        {
+            KerbalPortraitGallery.Instance.onBtnLeft();
+        }
+
+        private void KerbalGalleryAddSlot()
+        {
+            KerbalPortraitGallery.Instance.onBtnAddSlot();
+        }
+
+        private void KerbalGalleryRemoveSlot()
+        {
+            KerbalPortraitGallery.Instance.onBtnRemSlot();
+        }
+
+        private void ToggleNavball()
+        {
+            NavBallToggle.Instance.TogglePanel();
+        }
+
+        private void SetNavball(BooleanValue show)
+        {
+            var navBallToggle = NavBallToggle.Instance;
+            bool showBool = show.Value;
+            if (navBallToggle != null)
+            {
+                if (showBool && navBallToggle.panel.collapsed)
+                {
+                    navBallToggle.TogglePanel();
+                }
+                if (!showBool && navBallToggle.panel.expanded)
+                {
+                    navBallToggle.TogglePanel();
+                }
+            }
+        }
+
+        private BooleanValue GetNavball()
+        {
+            if (NavBallToggle.Instance != null)
+            {
+                return new BooleanValue(NavBallToggle.Instance.panel.expanded);
+            }
+            throw new kOS.Safe.Exceptions.KOSException("NavBallToggle is not instanciated");
         }
 
         private void HideToolbar()
@@ -156,23 +336,7 @@ namespace kOS_WPKSP
 
         private void ToggleIVACutouts()
         {
-            Vessel v = FlightGlobals.ActiveVessel;
-            if (v != null)
-            {
-                var activeCutouts = UnityEngine.Object.FindObjectsOfType<global::InternalSpaceOverlay>();
-                
-                if (activeCutouts.Length > 0)
-                {
-                    foreach (var cutout in activeCutouts)
-                    {
-                        cutout.Dismiss();
-                    }
-                }
-                else
-                {
-                    global::InternalSpaceOverlay.Create(FlightGlobals.ActiveVessel, null);
-                }
-            }
+            KerbalPortraitGallery.ToggleIVAOverlay();
         }
 
         private void ToggleCOM()
