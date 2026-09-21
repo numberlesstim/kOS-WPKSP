@@ -143,6 +143,7 @@ namespace kOS_WPKSP
             if (StageManager.Instance != null)
             {
                 StageManager.Instance.ToggleInfoPanels(show.Value);
+                return;
             }
             throw new kOS.Safe.Exceptions.KOSException("StageManager is not instanciated");
         }
