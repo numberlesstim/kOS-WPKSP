@@ -23,7 +23,7 @@ namespace kOS_WPKSP
     [KOSNomenclature("WPKSPAddon")]
     public class WPKSPAddon : kOS.Suffixed.Addon
     {
-        public static readonly String version = "1.3.0.0";
+        public static readonly String version = "1.3.0.1";
         static WPKSPAddon()
         {
         }
